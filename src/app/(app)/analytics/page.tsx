@@ -1,5 +1,4 @@
 'use client';
-
 import {
   Box, Card, CardContent, Grid, Typography, CircularProgress,
   alpha, useTheme, Chip, Select, MenuItem, FormControl,
@@ -19,7 +18,6 @@ import { useState } from 'react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
 dayjs.locale('pt-br');
-
 export default function AnalyticsPage() {
   const theme = useTheme();
   const [historyDays, setHistoryDays] = useState(30);
