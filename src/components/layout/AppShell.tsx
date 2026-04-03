@@ -12,6 +12,7 @@ import {
   EmojiEvents, TrackChanges, SelfImprovement, FitnessCenter,
   Analytics, Notifications, DarkMode, LightMode, Menu as MenuIcon,
   ChevronLeft, Bolt, Close, Person, GolfCourse, Quiz,
+  Psychology, Article, SupervisorAccount,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -23,6 +24,11 @@ const DRAWER_WIDTH = 260;
 
 const navItems = [
   { label: 'Hoje', icon: <Dashboard />, href: '/dashboard' },
+  { divider: true, label: 'Inteligência' },
+  { label: 'Central de IA', icon: <Psychology />, href: '/inteligencia', highlight: true },
+  { label: 'Importar Edital', icon: <Article />, href: '/edital' },
+  { label: 'Mentoria', icon: <SupervisorAccount />, href: '/mentoria' },
+  { divider: true, label: 'Estudo' },
   { label: 'Meu Concurso', icon: <GolfCourse />, href: '/concurso' },
   { label: 'Disciplinas', icon: <School />, href: '/disciplinas' },
   { label: 'Plano de Estudos', icon: <CalendarMonth />, href: '/plano' },
@@ -212,6 +218,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   sx={{
                     borderRadius: 2,
                     py: 0.75,
+                    ...(item.highlight && !isActive ? {
+                      background: 'linear-gradient(135deg, rgba(123,47,247,0.12), rgba(0,194,255,0.08))',
+                      border: '1px solid rgba(123,47,247,0.2)',
+                    } : {}),
                     '&.Mui-selected': {
                       bgcolor: alpha(theme.palette.primary.main, 0.12),
                       color: 'primary.main',
@@ -221,14 +231,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     '&:hover': { bgcolor: alpha(theme.palette.divider, 0.5) },
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 36, color: isActive ? 'primary.main' : 'text.secondary' }}>
+                  <ListItemIcon sx={{ minWidth: 36, color: isActive ? 'primary.main' : item.highlight ? '#7B2FF7' : 'text.secondary' }}>
                     {item.icon}
                   </ListItemIcon>
                   <ListItemText
                     primary={item.label}
                     primaryTypographyProps={{
                       fontSize: 14,
-                      fontWeight: isActive ? 600 : 400,
+                      fontWeight: isActive ? 600 : item.highlight ? 600 : 400,
+                      color: item.highlight && !isActive ? '#7B2FF7' : undefined,
                     }}
                   />
                 </ListItemButton>

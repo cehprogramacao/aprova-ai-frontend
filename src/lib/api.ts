@@ -282,3 +282,56 @@ export const emotionApi = {
   getHistory: () =>
     api.get('/emotions/history'),
 };
+
+export const intelligenceApi = {
+  getProfile: () => api.get('/intelligence/profile'),
+  analyzeProfile: () => api.post('/intelligence/profile/analyze'),
+  getTodayPlan: () => api.get('/intelligence/plan/today'),
+  generatePlan: () => api.post('/intelligence/plan/generate'),
+  replan: (data: any) => api.post('/intelligence/plan/replan', data),
+  getNextAction: () => api.get('/intelligence/next-action'),
+  completeAction: (itemId: string) => api.post(`/intelligence/next-action/${itemId}/complete`),
+  getInsights: () => api.get('/intelligence/insights'),
+  markInsightRead: (id: string) => api.patch(`/intelligence/insights/${id}/read`),
+  setMode: (mode: string) => api.post('/intelligence/mode', { mode }),
+  reversePlan: () => api.post('/intelligence/reverse-plan'),
+  activateBruteForce: (data: any) => api.post('/intelligence/brute-force', data),
+  activateWarMode: () => api.post('/intelligence/war-mode'),
+};
+
+export const behaviorApi = {
+  trackEvent: (data: any) => api.post('/behavior/event', data),
+  getEvents: (days?: number) => api.get('/behavior/events', { params: { days } }),
+  logEnergy: (data: any) => api.post('/behavior/energy', data),
+  getEnergyPattern: () => api.get('/behavior/energy/pattern'),
+  getProcrastination: () => api.get('/behavior/procrastination'),
+  getMetrics: (days?: number) => api.get('/behavior/metrics', { params: { days } }),
+};
+
+export const missionApi = {
+  getAll: () => api.get('/missions'),
+  generate: () => api.post('/missions/generate'),
+  accept: (id: string) => api.post(`/missions/${id}/accept`),
+  complete: (id: string) => api.post(`/missions/${id}/complete`),
+};
+
+export const mentorApi = {
+  getMyMentoring: () => api.get('/mentoring/my'),
+  getMentors: () => api.get('/mentoring/mentors'),
+  requestMentoring: (mentorId: string) => api.post('/mentoring/request', { mentorId }),
+  getMessages: (mentoringId: string) => api.get(`/mentoring/${mentoringId}/messages`),
+  sendMessage: (mentoringId: string, data: any) => api.post(`/mentoring/${mentoringId}/messages`, data),
+  getSessions: (mentoringId: string) => api.get(`/mentoring/${mentoringId}/sessions`),
+  scheduleSession: (mentoringId: string, data: any) => api.post(`/mentoring/${mentoringId}/sessions`, data),
+  getInsights: (studentId: string) => api.get(`/mentoring/mentor/student/${studentId}/insights`),
+  getMentorDashboard: () => api.get('/mentoring/mentor/dashboard'),
+  registerAsMentor: (data: any) => api.post('/mentoring/mentor/register', data),
+};
+
+export const editalApi = {
+  upload: (data: FormData) =>
+    api.post('/edital/upload', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  getStatus: (id: string) => api.get(`/edital/${id}/status`),
+  confirm: (id: string, data: any) => api.post(`/edital/${id}/confirm`, data),
+  getAll: () => api.get('/edital'),
+};
