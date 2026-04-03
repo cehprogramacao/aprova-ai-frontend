@@ -59,7 +59,8 @@ function getFraseDoDia(): string {
 }
 
 // Adicionar plugin dayOfYear
-import('dayjs/plugin/dayOfYear').then(p => dayjs.extend(p.default));
+import dayOfYear from 'dayjs/plugin/dayOfYear';
+dayjs.extend(dayOfYear);
 
 export default function DashboardPage() {
   const theme = useTheme();
@@ -308,7 +309,7 @@ export default function DashboardPage() {
               <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'flex-end' }}>
                 {last7.map((d, i) => {
                   const pct = d.minutes / maxMinutes;
-                  const isToday = d.date.isToday ? d.date.isSame(dayjs(), 'day') : false;
+                  const isToday = dayjs(d.date).isSame(dayjs(), 'day');
                   return (
                     <Tooltip key={i} title={`${d.date.format('ddd DD/MM')}: ${Math.round(d.minutes / 60 * 10) / 10}h`}>
                       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.25 }}>
