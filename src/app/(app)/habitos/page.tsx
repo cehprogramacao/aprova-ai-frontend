@@ -8,8 +8,7 @@ import {
   FormControl, InputLabel, Select, MenuItem, Tooltip, Avatar,
 } from '@mui/material';
 import {
-  Add, Delete, CheckCircle, RadioButtonUnchecked, FitnessCenter,
-  LocalFire, EmojiEvents, CalendarMonth,
+  Add, Delete, CheckCircle, RadioButtonUnchecked, FitnessCenter, LocalFireDepartment, EmojiEvents, CalendarMonth,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { habitApi } from '@/lib/api';

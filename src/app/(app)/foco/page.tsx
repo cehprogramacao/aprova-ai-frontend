@@ -71,8 +71,10 @@ export default function FocoPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: any) =>
-      sessionIdRef.current ? focusApi.update(sessionIdRef.current, data) : Promise.resolve(),
+    mutationFn: async (data: any) => {
+      if (!sessionIdRef.current) throw new Error('Sem sessão ativa');
+      return focusApi.update(sessionIdRef.current, data);
+    },
   });
 
   const tick = useCallback(() => {
@@ -418,19 +420,25 @@ export default function FocoPage() {
             return (
               <Box>
                 {err.subject && (
-                  <Chip label={err.subject.name} size="small" sx={{ mb: 1.5,
-                    bgcolor: alpha(err.subject.color || '#888', 0.15), color: err.subject.color }} />
+                  <Chip label={err.subject.name} size="small" sx={{
+                    mb: 1.5,
+                    bgcolor: alpha(err.subject.color || '#888', 0.15), color: err.subject.color
+                  }} />
                 )}
-                <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#EF4444', 0.06),
-                  border: `1px solid ${alpha('#EF4444', 0.2)}`, mb: 2 }}>
+                <Paper elevation={0} sx={{
+                  p: 2, borderRadius: 3, bgcolor: alpha('#EF4444', 0.06),
+                  border: `1px solid ${alpha('#EF4444', 0.2)}`, mb: 2
+                }}>
                   <Typography variant="caption" fontWeight={700} color="error" display="block" mb={0.75}>
                     ❓ O que você errou:
                   </Typography>
                   <Typography variant="body1" fontWeight={500}>{err.description}</Typography>
                 </Paper>
                 <Collapse in={flashFlipped}>
-                  <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#22C55E', 0.06),
-                    border: `1px solid ${alpha('#22C55E', 0.2)}` }}>
+                  <Paper elevation={0} sx={{
+                    p: 2, borderRadius: 3, bgcolor: alpha('#22C55E', 0.06),
+                    border: `1px solid ${alpha('#22C55E', 0.2)}`
+                  }}>
                     <Typography variant="caption" fontWeight={700} sx={{ color: '#22C55E' }} display="block" mb={0.75}>
                       ✅ Resposta correta:
                     </Typography>

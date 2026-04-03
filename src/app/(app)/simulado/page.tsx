@@ -210,7 +210,7 @@ export default function SimuladoPage() {
     if (!current) return;
     const clean = gabaritoInput.toUpperCase().replace(/[^ABCDE]/g, '');
     const answers = current.answers.map((a, i) => ({
-      ...a, correct: (clean[i] as AnswerKey) || '',
+      ...a, correct: (clean[i] as AnswerKey) ?? '',
     }));
     setCurrent(prev => prev ? { ...prev, answers } : null);
     toast.success('Gabarito aplicado!');
