@@ -223,7 +223,7 @@ export default function FlashcardImportPage() {
                     </Paper>
                   </Box>
                 ))}
-                <Alert severity="tip" icon={<AutoAwesome />} sx={{ mt: 1 }}>
+                <Alert severity="info" icon={<AutoAwesome />} sx={{ mt: 1 }}>
                   <Typography variant="body2">
                     Funciona com apostilas de concurso em maiúsculas, como o exemplo que você enviou!
                   </Typography>
