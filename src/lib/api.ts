@@ -335,3 +335,20 @@ export const editalApi = {
   confirm: (id: string, data: any) => api.post(`/edital/${id}/confirm`, data),
   getAll: () => api.get('/edital'),
 };
+
+export const flashcardExtractApi = {
+  preview: (data: FormData) =>
+    api.post('/flashcards/extract/preview', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  confirm: (data: any) => api.post('/flashcards/extract/confirm', data),
+};
+
+export const postSimuladoApi = {
+  analyze: (data: any) => api.post('/post-simulado/analyze', data),
+  getHistory: () => api.get('/post-simulado/history'),
+};
+
+export const dailyChallengeApi = {
+  getToday: () => api.get('/daily-challenge/today'),
+  answer: (id: string, data: any) => api.post(`/daily-challenge/${id}/answer`, data),
+  getHistory: () => api.get('/daily-challenge/history'),
+};

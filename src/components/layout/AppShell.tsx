@@ -12,7 +12,8 @@ import {
   EmojiEvents, TrackChanges, SelfImprovement, FitnessCenter,
   Analytics, Notifications, DarkMode, LightMode, Menu as MenuIcon,
   ChevronLeft, Bolt, Close, Person, GolfCourse, Quiz,
-  Psychology, Article, SupervisorAccount,
+  Psychology, Article, SupervisorAccount, LocalFireDepartment,
+  FileUpload,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -35,7 +36,9 @@ const navItems = [
   { label: 'Simulados', icon: <Quiz />, href: '/simulado' },
   { label: 'Modo Foco', icon: <SelfImprovement />, href: '/foco' },
   { divider: true, label: 'Ferramentas' },
+  { label: 'Desafio Diário', icon: <LocalFireDepartment />, href: '/desafio' },
   { label: 'Flashcards', icon: <FlashOn />, href: '/flashcards' },
+  { label: 'Importar Flashcards', icon: <FileUpload />, href: '/flashcards/importar' },
   { label: 'Caderno de Erros', icon: <MenuBook />, href: '/caderno-erros' },
   { label: 'Questões', icon: <QuestionAnswer />, href: '/questoes' },
   { label: 'Anotações', icon: <Notes />, href: '/anotacoes' },
