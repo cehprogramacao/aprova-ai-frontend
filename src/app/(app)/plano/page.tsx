@@ -66,7 +66,7 @@ export default function PlanoPage() {
       qc.invalidateQueries({ queryKey: ['study-plans'] });
       qc.invalidateQueries({ queryKey: ['today-tasks'] });
       setGenerateOpen(false);
-      toast.success(res.data.message);
+      toast.success(res.data.message || 'Cronograma gerado!');
     },
   });
 

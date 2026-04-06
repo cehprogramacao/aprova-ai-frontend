@@ -352,3 +352,13 @@ export const dailyChallengeApi = {
   answer: (id: string, data: any) => api.post(`/daily-challenge/${id}/answer`, data),
   getHistory: () => api.get('/daily-challenge/history'),
 };
+
+export const flashcardFolderApi = {
+  getFolders: () => api.get('/flashcard-folders'),
+  createFolder: (data: any) => api.post('/flashcard-folders', data),
+  updateFolder: (id: string, data: any) => api.put(`/flashcard-folders/${id}`, data),
+  deleteFolder: (id: string) => api.delete(`/flashcard-folders/${id}`),
+  getStudyQueue: (id: string, mode: string) => api.get(`/flashcard-folders/${id}/study?mode=${mode}`),
+  getStats: (id: string) => api.get(`/flashcard-folders/${id}/stats`),
+  moveCard: (cardId: string, folderId: string | null) => api.patch(`/flashcard-folders/cards/${cardId}/move`, { folderId }),
+};

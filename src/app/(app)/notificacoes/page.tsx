@@ -72,8 +72,13 @@ export default function NotificacoesPage() {
                 {notif.isRead && <Box sx={{ width: 8, flexShrink: 0 }} />}
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="body2" fontWeight={notif.isRead ? 400 : 600}>
-                    {notif.message}
+                    {notif.title}
                   </Typography>
+                  {notif.body && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+                      {notif.body}
+                    </Typography>
+                  )}
                   <Typography variant="caption" color="text.secondary">
                     {dayjs(notif.createdAt).format('DD/MM/YYYY [às] HH:mm')}
                   </Typography>
