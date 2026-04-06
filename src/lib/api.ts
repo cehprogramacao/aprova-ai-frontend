@@ -353,6 +353,14 @@ export const dailyChallengeApi = {
   getHistory: () => api.get('/daily-challenge/history'),
 };
 
+export const questionExtractApi = {
+  preview: (data: FormData) =>
+    api.post('/question-extract/preview', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  confirm: (data: any) => api.post('/question-extract/confirm', data),
+  list: (params?: any) => api.get('/question-extract/list', { params }),
+  answer: (id: string, data: any) => api.post(`/question-extract/${id}/answer`, data),
+};
+
 export const flashcardFolderApi = {
   getFolders: () => api.get('/flashcard-folders'),
   createFolder: (data: any) => api.post('/flashcard-folders', data),

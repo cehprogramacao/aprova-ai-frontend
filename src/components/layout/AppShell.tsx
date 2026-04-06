@@ -41,6 +41,7 @@ const navItems = [
   { label: 'Importar Flashcards', icon: <FileUpload />, href: '/flashcards/importar' },
   { label: 'Caderno de Erros', icon: <MenuBook />, href: '/caderno-erros' },
   { label: 'Questões', icon: <QuestionAnswer />, href: '/questoes' },
+  { label: 'Importar Questões', icon: <FileUpload />, href: '/questoes/importar' },
   { label: 'Anotações', icon: <Notes />, href: '/anotacoes' },
   { label: 'Mapas Mentais', icon: <AccountTree />, href: '/mapas-mentais' },
   { label: 'PDFs', icon: <PictureAsPdf />, href: '/pdfs' },
