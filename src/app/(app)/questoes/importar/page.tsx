@@ -241,17 +241,21 @@ export default function ImportarQuestoesPage() {
           {questions.map((q, idx) => (
             <Accordion key={idx} disableGutters elevation={0}
               sx={{ border: `1px solid ${q.answer ? alpha('#10B981', 0.3) : alpha('#F59E0B', 0.4)}`, borderRadius: '12px !important', '&:before': { display: 'none' } }}>
-              <AccordionSummary expandIcon={<ExpandMore />} sx={{ px: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%', pr: 1 }}>
-                  <Chip label={`Q${q.number}`} size="small" sx={{ minWidth: 40, fontWeight: 700, bgcolor: alpha('#6C63FF', 0.1), color: '#6C63FF' }} />
-                  <Typography variant="body2" sx={{ flexGrow: 1 }} noWrap>{q.statement}</Typography>
-                  {q.answer
-                    ? <Chip label={`Resp: ${q.answer}`} size="small" sx={{ bgcolor: alpha('#10B981', 0.1), color: '#10B981', fontWeight: 700 }} />
-                    : <Chip label="Sem gabarito" size="small" sx={{ bgcolor: alpha('#F59E0B', 0.1), color: '#F59E0B' }} />
-                  }
-                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); removeQuestion(idx); }}>
-                    <Delete sx={{ fontSize: 16, color: 'text.disabled' }} />
-                  </IconButton>
+              <AccordionSummary expandIcon={<ExpandMore />} sx={{ px: 2, minHeight: 56 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', pr: 1, overflow: 'hidden' }}>
+                  <Chip label={`Q${q.number}`} size="small" sx={{ minWidth: 36, flexShrink: 0, fontWeight: 700, bgcolor: alpha('#6C63FF', 0.1), color: '#6C63FF' }} />
+                  <Typography variant="body2" sx={{ flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                    {q.statement}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                    {q.answer
+                      ? <Chip label={`${q.answer}`} size="small" sx={{ bgcolor: alpha('#10B981', 0.1), color: '#10B981', fontWeight: 700, minWidth: 28 }} />
+                      : <Chip label="?" size="small" sx={{ bgcolor: alpha('#F59E0B', 0.1), color: '#F59E0B', fontWeight: 700 }} />
+                    }
+                    <IconButton size="small" onClick={(e) => { e.stopPropagation(); removeQuestion(idx); }}>
+                      <Delete sx={{ fontSize: 16, color: 'text.disabled' }} />
+                    </IconButton>
+                  </Box>
                 </Box>
               </AccordionSummary>
               <AccordionDetails sx={{ px: 2, pb: 2 }}>
@@ -311,10 +315,10 @@ export default function ImportarQuestoesPage() {
           ))}
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-          <Button variant="outlined" onClick={() => setStep(0)}>Voltar</Button>
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          <Button variant="outlined" onClick={() => setStep(0)} sx={{ flex: { xs: '1 1 100%', sm: 'none' } }}>Voltar</Button>
           <Button variant="contained"
-            sx={{ background: BRAND_GRADIENT, px: 4 }}
+            sx={{ background: BRAND_GRADIENT, px: 4, flex: { xs: '1 1 100%', sm: 'none' } }}
             onClick={() => confirmMutation.mutate()}
             disabled={confirmMutation.isPending || questions.length === 0}>
             {confirmMutation.isPending ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : `Salvar ${questions.length} questões`}

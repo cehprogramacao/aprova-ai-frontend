@@ -11,10 +11,11 @@ import {
 } from '@mui/material';
 import {
   Add, CheckCircle, Cancel, TrendingUp, QuestionAnswer,
-  Keyboard, Bolt, Speed, Close, BarChart,
+  Keyboard, Bolt, Speed, Close, BarChart, PlayArrow,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { questionApi, subjectApi } from '@/lib/api';
+import Link from 'next/link';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
 
@@ -243,7 +244,16 @@ export default function QuestoesPage() {
           <Typography variant="h5" fontWeight={700}>Questões</Typography>
           <Typography color="text.secondary" variant="body2">Acompanhe seu desempenho por disciplina e banca</Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Button
+            variant="contained"
+            startIcon={<PlayArrow />}
+            component={Link}
+            href="/questoes/praticar"
+            sx={{ background: 'linear-gradient(135deg,#10B981,#3B82F6)', fontWeight: 700 }}
+          >
+            Praticar
+          </Button>
           <Tooltip title="Modo rápido com atalhos de teclado">
             <Button variant="outlined" startIcon={<Keyboard />} onClick={() => setRapidoOpen(true)}
               sx={{ borderColor: '#7B2FF7', color: '#7B2FF7', '&:hover': { bgcolor: alpha('#7B2FF7', 0.06) } }}>

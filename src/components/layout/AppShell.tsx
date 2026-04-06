@@ -13,7 +13,7 @@ import {
   Analytics, Notifications, DarkMode, LightMode, Menu as MenuIcon,
   ChevronLeft, Bolt, Close, Person, GolfCourse, Quiz,
   Psychology, Article, SupervisorAccount, LocalFireDepartment,
-  FileUpload,
+  FileUpload, PlayArrow,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -41,6 +41,7 @@ const navItems = [
   { label: 'Importar Flashcards', icon: <FileUpload />, href: '/flashcards/importar' },
   { label: 'Caderno de Erros', icon: <MenuBook />, href: '/caderno-erros' },
   { label: 'Questões', icon: <QuestionAnswer />, href: '/questoes' },
+  { label: 'Praticar Questões', icon: <PlayArrow />, href: '/questoes/praticar' },
   { label: 'Importar Questões', icon: <FileUpload />, href: '/questoes/importar' },
   { label: 'Anotações', icon: <Notes />, href: '/anotacoes' },
   { label: 'Mapas Mentais', icon: <AccountTree />, href: '/mapas-mentais' },
