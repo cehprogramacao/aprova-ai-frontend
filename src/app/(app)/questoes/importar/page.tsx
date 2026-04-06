@@ -76,8 +76,16 @@ export default function ImportarQuestoesPage() {
       source: meta.source || null,
     }),
     onSuccess: (res) => {
+      const saved = res.data.data?.created ?? 0;
+      if (saved === 0) {
+        toast.error('Nenhuma questão salva. Verifique se as questões têm enunciado preenchido.');
+        return;
+      }
       setStep(2);
       toast.success(res.data.data.message);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.error || 'Erro ao salvar questões.');
     },
   });
 
