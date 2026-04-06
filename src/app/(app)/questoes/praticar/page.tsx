@@ -85,7 +85,7 @@ function ResultCard({ question, selected, onNext, isLast }: {
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-        {OPTION_LETTERS.filter(l => question.options?.[l]).map(letter => {
+        {OPTION_LETTERS.filter(l => question.options?.[l] != null && question.options[l] !== '').map(letter => {
           const isAns = letter === question.answer;
           const isSel = letter === selected;
           return (
@@ -396,9 +396,15 @@ export default function PraticarQuestoesPage() {
 
           {answered ? (
             <ResultCard question={q} selected={selected!} onNext={goNext} isLast={currentIdx >= questions.length - 1} />
+          ) : !OPTION_LETTERS.some(l => q.options?.[l]) ? (
+            <Box sx={{ textAlign: 'center', py: 3 }}>
+              <Typography color="text.secondary" mb={2}>
+                Esta questão não tem alternativas extraídas. Reimporte o PDF.
+              </Typography>
+              <Button variant="outlined" onClick={handleSkip}>Pular</Button>
+            </Box>
           ) : (
             <>
-              {/* Alternativas */}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
                 {OPTION_LETTERS.filter(l => q.options?.[l]).map(letter => {
                   const isSel = selected === letter;
@@ -431,12 +437,9 @@ export default function PraticarQuestoesPage() {
               </Box>
 
               <Box sx={{ display: 'flex', gap: 2 }}>
-                <Button
-                  variant="contained" fullWidth
+                <Button variant="contained" fullWidth
                   sx={{ background: BRAND_GRADIENT, py: 1.25, fontWeight: 700 }}
-                  onClick={handleConfirm}
-                  disabled={!selected}
-                >
+                  onClick={handleConfirm} disabled={!selected}>
                   Confirmar resposta
                 </Button>
                 <Tooltip title="Pular questão">
