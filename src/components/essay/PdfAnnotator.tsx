@@ -421,10 +421,15 @@ export default function PdfAnnotator({ pdfUrl, savedAnnotations, onSave, readOnl
             <Page
               pageNumber={page}
               scale={scale}
-              onRenderSuccess={(page: any) => {
-                const viewport = page.viewport;
-                setPdfWidth(viewport?.width ?? 600);
-                setPdfHeight(viewport?.height ?? 800);
+              onRenderSuccess={() => {
+                // Lê dimensões do canvas real do react-pdf após render
+                requestAnimationFrame(() => {
+                  const pdfCanvas = pdfContainerRef.current?.querySelector('canvas');
+                  if (pdfCanvas) {
+                    setPdfWidth(pdfCanvas.width);
+                    setPdfHeight(pdfCanvas.height);
+                  }
+                });
               }}
               renderAnnotationLayer
               renderTextLayer
@@ -439,10 +444,13 @@ export default function PdfAnnotator({ pdfUrl, savedAnnotations, onSave, readOnl
             position: 'absolute',
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
-            cursor: readOnly ? 'default' : tool === 'eraser' ? 'cell' : tool === 'circle' ? 'crosshair' : 'crosshair',
+            // CSS exibe no tamanho visual do PDF; atributos width/height
+            // são definidos em pixels reais pelo useEffect
+            width: pdfWidth > 0 ? pdfWidth : '100%',
+            height: pdfHeight > 0 ? pdfHeight : '100%',
+            cursor: readOnly ? 'default' : tool === 'eraser' ? 'cell' : 'crosshair',
             touchAction: 'none',
+            pointerEvents: readOnly ? 'none' : 'auto',
           }}
           onMouseDown={startDraw}
           onMouseMove={draw}
