@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, Suspense } from 'react';
 import {
   Box, Card, CardContent, Typography, Button, TextField, Chip, alpha,
   useTheme, CircularProgress, LinearProgress, Paper, Grid, Tooltip,
-  Select, MenuItem, FormControl, InputLabel, Divider, IconButton,
+  Divider, ToggleButton, ToggleButtonGroup,
 } from '@mui/material';
 import {
-  ArrowBack, Send, AutoAwesome, Spellcheck, Timer,
-  Psychology, CheckCircle, Warning, Lightbulb,
+  ArrowBack, Send, Lightbulb, Psychology, CheckCircle, Warning,
+  Edit as EditIcon, UploadFile, PictureAsPdf, Close,
 } from '@mui/icons-material';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { essayApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -27,29 +27,38 @@ const THEMES_SUGGESTIONS = [
 
 const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 
-const IDEAL_WORDS = { min: 200, max: 300, enem: 30 }; // parágrafos ENEM
-
-export default function NovaRedacaoPage() {
+function NovaRedacaoContent() {
   const theme = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const parentId = searchParams.get('rewrite'); // reescrita de redação anterior
+  const parentId = searchParams.get('rewrite');
+  const fileRef = useRef<HTMLInputElement>(null);
 
+  const [mode, setMode] = useState<'text' | 'pdf'>('text');
   const [title, setTitle] = useState('');
   const [theme2, setTheme2] = useState('');
   const [content, setContent] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
 
   const words = countWords(content);
   const chars = content.length;
   const paragraphs = content.split('\n').filter(p => p.trim().length > 0).length;
-
-  // Auto-contagem de palavras com debounce
-  const wordProgress = Math.min(100, (words / IDEAL_WORDS.max) * 100);
-  const wordColor = words < IDEAL_WORDS.min ? '#F59E0B' : words <= IDEAL_WORDS.max ? '#22C55E' : '#EF4444';
+  const wordProgress = Math.min(100, (words / 300) * 100);
+  const wordColor = words < 200 ? '#F59E0B' : words <= 300 ? '#22C55E' : '#EF4444';
 
   const submitMutation = useMutation({
-    mutationFn: () => essayApi.submit({ title, theme: theme2 || null, content, parentId }),
+    mutationFn: () => {
+      if (mode === 'pdf' && pdfFile) {
+        const fd = new FormData();
+        fd.append('title', title);
+        if (theme2) fd.append('theme', theme2);
+        if (parentId) fd.append('parentId', parentId);
+        fd.append('pdf', pdfFile);
+        return essayApi.submitWithFile(fd);
+      }
+      return essayApi.submit({ title, theme: theme2 || null, content, parentId });
+    },
     onSuccess: (res) => {
       toast.success('Redação enviada com sucesso!');
       router.push(`/redacao/${res.data.data.id}`);
@@ -57,7 +66,9 @@ export default function NovaRedacaoPage() {
     onError: (e: any) => toast.error(e?.response?.data?.error || 'Erro ao enviar.'),
   });
 
-  const canSubmit = title.trim() && content.trim().length >= 50;
+  const canSubmit = title.trim() && (
+    mode === 'text' ? content.trim().length >= 50 : pdfFile != null
+  );
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto' }}>
@@ -69,7 +80,7 @@ export default function NovaRedacaoPage() {
             {parentId ? 'Reescrever Redação' : 'Nova Redação'}
           </Typography>
           <Typography color="text.secondary" variant="body2">
-            Escreva com calma. Seu progresso é salvo automaticamente.
+            Escreva ou envie seu PDF para correção.
           </Typography>
         </Box>
         <Button
@@ -114,58 +125,105 @@ export default function NovaRedacaoPage() {
                 )}
               </Box>
 
-              <TextField
-                fullWidth multiline rows={20} label="Texto da redação *"
-                value={content} onChange={e => setContent(e.target.value)}
-                placeholder="Desenvolva sua redação aqui..."
-                sx={{
-                  '& .MuiOutlinedInput-root': { fontFamily: 'Georgia, serif', fontSize: 15, lineHeight: 1.8 },
-                }}
-              />
+              {/* Toggle modo */}
+              <Box sx={{ mb: 2 }}>
+                <ToggleButtonGroup value={mode} exclusive onChange={(_, v) => v && setMode(v)} size="small">
+                  <ToggleButton value="text">
+                    <EditIcon sx={{ fontSize: 16, mr: 0.5 }} /> Digitar
+                  </ToggleButton>
+                  <ToggleButton value="pdf">
+                    <UploadFile sx={{ fontSize: 16, mr: 0.5 }} /> Enviar PDF
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+
+              {mode === 'text' ? (
+                <TextField
+                  fullWidth multiline rows={20} label="Texto da redação *"
+                  value={content} onChange={e => setContent(e.target.value)}
+                  placeholder="Desenvolva sua redação aqui..."
+                  sx={{
+                    '& .MuiOutlinedInput-root': { fontFamily: 'Georgia, serif', fontSize: 15, lineHeight: 1.8 },
+                  }}
+                />
+              ) : (
+                <Box>
+                  <input ref={fileRef} type="file" accept=".pdf" hidden
+                    onChange={e => setPdfFile(e.target.files?.[0] || null)} />
+                  {pdfFile ? (
+                    <Box sx={{ p: 2.5, borderRadius: 2, border: `2px solid ${alpha('#22C55E', 0.4)}`,
+                      bgcolor: alpha('#22C55E', 0.04), display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <PictureAsPdf sx={{ color: '#EF4444', fontSize: 36 }} />
+                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Typography fontWeight={600} noWrap>{pdfFile.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {(pdfFile.size / 1024).toFixed(0)} KB
+                        </Typography>
+                      </Box>
+                      <Button size="small" color="error" startIcon={<Close />}
+                        onClick={() => { setPdfFile(null); if (fileRef.current) fileRef.current.value = ''; }}>
+                        Remover
+                      </Button>
+                    </Box>
+                  ) : (
+                    <Box onClick={() => fileRef.current?.click()}
+                      sx={{ p: 4, borderRadius: 2, border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
+                        bgcolor: alpha(theme.palette.primary.main, 0.03), textAlign: 'center',
+                        cursor: 'pointer', '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.07) },
+                        transition: 'background 0.2s' }}>
+                      <UploadFile sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                      <Typography fontWeight={600}>Clique para selecionar o PDF</Typography>
+                      <Typography variant="body2" color="text.secondary">Tamanho máximo: 20 MB</Typography>
+                    </Box>
+                  )}
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>
 
         {/* Painel lateral */}
         <Grid size={{ xs: 12, md: 4 }}>
-          {/* Contador */}
-          <Card sx={{ mb: 2 }}>
-            <CardContent>
-              <Typography variant="subtitle2" fontWeight={700} mb={1.5}>Análise em tempo real</Typography>
+          {/* Contador — só no modo texto */}
+          {mode === 'text' && (
+            <Card sx={{ mb: 2 }}>
+              <CardContent>
+                <Typography variant="subtitle2" fontWeight={700} mb={1.5}>Análise em tempo real</Typography>
 
-              <Box sx={{ mb: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                  <Typography variant="body2">Palavras</Typography>
-                  <Typography variant="body2" fontWeight={700} color={wordColor}>{words}</Typography>
-                </Box>
-                <LinearProgress variant="determinate" value={wordProgress}
-                  sx={{ height: 6, borderRadius: 3, bgcolor: alpha('#EF4444', 0.1),
-                    '& .MuiLinearProgress-bar': { bgcolor: wordColor } }} />
-                <Typography variant="caption" color="text.secondary">
-                  {words < IDEAL_WORDS.min ? `${IDEAL_WORDS.min - words} palavras até o mínimo` :
-                   words > IDEAL_WORDS.max ? `${words - IDEAL_WORDS.max} acima do ideal` :
-                   'Dentro do ideal ENEM'}
-                </Typography>
-              </Box>
-
-              <Divider sx={{ mb: 1.5 }} />
-
-              {[
-                { label: 'Parágrafos', value: paragraphs, ideal: '4-5', ok: paragraphs >= 4 && paragraphs <= 5 },
-                { label: 'Caracteres', value: chars, ideal: '1.200+', ok: chars >= 1200 },
-              ].map(item => (
-                <Box key={item.label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                  <Typography variant="body2" color="text.secondary">{item.label}</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600}>{item.value}</Typography>
-                    {item.ok
-                      ? <CheckCircle sx={{ fontSize: 14, color: '#22C55E' }} />
-                      : <Warning sx={{ fontSize: 14, color: '#F59E0B' }} />}
+                <Box sx={{ mb: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2">Palavras</Typography>
+                    <Typography variant="body2" fontWeight={700} color={wordColor}>{words}</Typography>
                   </Box>
+                  <LinearProgress variant="determinate" value={wordProgress}
+                    sx={{ height: 6, borderRadius: 3, bgcolor: alpha('#EF4444', 0.1),
+                      '& .MuiLinearProgress-bar': { bgcolor: wordColor } }} />
+                  <Typography variant="caption" color="text.secondary">
+                    {words < 200 ? `${200 - words} palavras até o mínimo` :
+                     words > 300 ? `${words - 300} acima do ideal` :
+                     'Dentro do ideal ENEM'}
+                  </Typography>
                 </Box>
-              ))}
-            </CardContent>
-          </Card>
+
+                <Divider sx={{ mb: 1.5 }} />
+
+                {[
+                  { label: 'Parágrafos', value: paragraphs, ideal: '4-5', ok: paragraphs >= 4 && paragraphs <= 5 },
+                  { label: 'Caracteres', value: chars, ideal: '1.200+', ok: chars >= 1200 },
+                ].map(item => (
+                  <Box key={item.label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">{item.label}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Typography variant="body2" fontWeight={600}>{item.value}</Typography>
+                      {item.ok
+                        ? <CheckCircle sx={{ fontSize: 14, color: '#22C55E' }} />
+                        : <Warning sx={{ fontSize: 14, color: '#F59E0B' }} />}
+                    </Box>
+                  </Box>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Estrutura ENEM */}
           <Card sx={{ mb: 2 }}>
@@ -219,5 +277,13 @@ export default function NovaRedacaoPage() {
         </Grid>
       </Grid>
     </Box>
+  );
+}
+
+export default function NovaRedacaoPage() {
+  return (
+    <Suspense fallback={<Box sx={{ textAlign: 'center', py: 8 }}><CircularProgress /></Box>}>
+      <NovaRedacaoContent />
+    </Suspense>
   );
 }

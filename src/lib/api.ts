@@ -363,6 +363,8 @@ export const questionExtractApi = {
 
 export const essayApi = {
   submit: (data: any) => api.post('/essays', data),
+  submitWithFile: (form: FormData) =>
+    api.post('/essays', form, { headers: { 'Content-Type': 'multipart/form-data' } }),
   list: (params?: any) => api.get('/essays', { params }),
   get: (id: string) => api.get(`/essays/${id}`),
   generateInvite: () => api.post('/essays/invite'),

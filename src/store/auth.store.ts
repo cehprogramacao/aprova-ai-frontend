@@ -6,6 +6,7 @@ interface User {
   name: string;
   email: string;
   avatar?: string;
+  role?: 'STUDENT' | 'TEACHER';
   experienceLevel: string;
   examName?: string;
   examDate?: string;

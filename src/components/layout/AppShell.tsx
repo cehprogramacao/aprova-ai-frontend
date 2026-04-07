@@ -14,6 +14,7 @@ import {
   ChevronLeft, Bolt, Close, Person, GolfCourse, Quiz,
   Psychology, Article, SupervisorAccount, LocalFireDepartment,
   FileUpload, PlayArrow, AutoStories, School as SchoolIcon,
+  Group, Assignment, RateReview,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -23,7 +24,11 @@ import { gamificationApi, notificationApi } from '@/lib/api';
 
 const DRAWER_WIDTH = 260;
 
-const navItems = [
+type NavItem =
+  | { divider: true; label: string }
+  | { label: string; icon: React.ReactNode; href: string; highlight?: boolean };
+
+const studentNavItems: NavItem[] = [
   { label: 'Hoje', icon: <Dashboard />, href: '/dashboard' },
   { divider: true, label: 'Inteligência' },
   { label: 'Central de IA', icon: <Psychology />, href: '/inteligencia', highlight: true },
@@ -46,15 +51,26 @@ const navItems = [
   { label: 'Anotações', icon: <Notes />, href: '/anotacoes' },
   { label: 'Mapas Mentais', icon: <AccountTree />, href: '/mapas-mentais' },
   { label: 'PDFs', icon: <PictureAsPdf />, href: '/pdfs' },
+  { divider: true, label: 'Redação' },
+  { label: 'Minhas Redações', icon: <AutoStories />, href: '/redacao' },
+  { label: 'Nova Redação', icon: <PlayArrow />, href: '/redacao/nova' },
   { divider: true, label: 'Progresso' },
   { label: 'Metas', icon: <TrackChanges />, href: '/metas' },
   { label: 'Hábitos', icon: <FitnessCenter />, href: '/habitos' },
   { label: 'Analytics', icon: <Analytics />, href: '/analytics' },
   { label: 'Gamificação', icon: <EmojiEvents />, href: '/gamificacao' },
-  { divider: true, label: 'Redação' },
-  { label: 'Minhas Redações', icon: <AutoStories />, href: '/redacao' },
-  { label: 'Nova Redação', icon: <PlayArrow />, href: '/redacao/nova' },
-  { label: 'Painel Professor', icon: <SchoolIcon />, href: '/professor' },
+  { divider: true, label: 'Conta' },
+  { label: 'Meu Perfil', icon: <Person />, href: '/perfil' },
+];
+
+const teacherNavItems: NavItem[] = [
+  { label: 'Dashboard', icon: <Dashboard />, href: '/professor' },
+  { divider: true, label: 'Alunos' },
+  { label: 'Meus Alunos', icon: <Group />, href: '/professor/alunos' },
+  { divider: true, label: 'Redações' },
+  { label: 'Todas as Redações', icon: <Assignment />, href: '/professor/redacoes' },
+  { divider: true, label: 'Ferramentas' },
+  { label: 'Templates de Feedback', icon: <RateReview />, href: '/professor/templates' },
   { divider: true, label: 'Conta' },
   { label: 'Meu Perfil', icon: <Person />, href: '/perfil' },
 ];
@@ -64,6 +80,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const theme = useTheme();
   const { user, isDark, toggleDark, logout } = useAuthStore();
+
+  const isTeacher = user?.role === 'TEACHER';
+  const navItems = isTeacher ? teacherNavItems : studentNavItems;
 
   const { data: gamiData } = useQuery({
     queryKey: ['gamification'],
@@ -105,8 +124,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* XP / Level */}
-          {gamiData && (
+          {/* Role badge */}
+          {isTeacher && (
+            <Chip
+              icon={<SchoolIcon sx={{ fontSize: 14 }} />}
+              label="Professor"
+              size="small"
+              sx={{ bgcolor: alpha('#7B2FF7', 0.12), color: '#7B2FF7', fontWeight: 700, mr: 1 }}
+            />
+          )}
+
+          {/* XP / Level — só para alunos */}
+          {!isTeacher && gamiData && (
             <Chip
               icon={<Bolt sx={{ fontSize: 16 }} />}
               label={`Nível ${gamiData.level} · ${gamiData.xp} XP`}
@@ -116,8 +145,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             />
           )}
 
-          {/* Streak */}
-          {gamiData?.streak > 0 && (
+          {/* Streak — só para alunos */}
+          {!isTeacher && gamiData?.streak > 0 && (
             <Chip
               label={`🔥 ${gamiData.streak} dias`}
               size="small"
@@ -204,7 +233,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         <List sx={{ px: 1, py: 1, flexGrow: 1, overflowY: 'auto' }}>
           {navItems.map((item, idx) => {
-            if (item.divider) {
+            if ('divider' in item && item.divider) {
               return (
                 <Typography
                   key={idx}
@@ -216,18 +245,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               );
             }
 
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            const navItem = item as { label: string; icon: React.ReactNode; href: string; highlight?: boolean };
+            const isActive = pathname === navItem.href || pathname.startsWith(navItem.href + '/');
 
             return (
-              <ListItem key={item.href} disablePadding sx={{ mb: 0.25 }}>
+              <ListItem key={navItem.href} disablePadding sx={{ mb: 0.25 }}>
                 <ListItemButton
                   component={Link}
-                  href={item.href!}
+                  href={navItem.href}
                   selected={isActive}
                   sx={{
                     borderRadius: 2,
                     py: 0.75,
-                    ...(item.highlight && !isActive ? {
+                    ...(navItem.highlight && !isActive ? {
                       background: 'linear-gradient(135deg, rgba(123,47,247,0.12), rgba(0,194,255,0.08))',
                       border: '1px solid rgba(123,47,247,0.2)',
                     } : {}),
@@ -240,15 +270,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     '&:hover': { bgcolor: alpha(theme.palette.divider, 0.5) },
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 36, color: isActive ? 'primary.main' : item.highlight ? '#7B2FF7' : 'text.secondary' }}>
-                    {item.icon}
+                  <ListItemIcon sx={{ minWidth: 36, color: isActive ? 'primary.main' : navItem.highlight ? '#7B2FF7' : 'text.secondary' }}>
+                    {navItem.icon}
                   </ListItemIcon>
                   <ListItemText
-                    primary={item.label}
+                    primary={navItem.label}
                     primaryTypographyProps={{
                       fontSize: 14,
-                      fontWeight: isActive ? 600 : item.highlight ? 600 : 400,
-                      color: item.highlight && !isActive ? '#7B2FF7' : undefined,
+                      fontWeight: isActive ? 600 : navItem.highlight ? 600 : 400,
+                      color: navItem.highlight && !isActive ? '#7B2FF7' : undefined,
                     }}
                   />
                 </ListItemButton>
