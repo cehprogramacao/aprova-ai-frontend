@@ -47,7 +47,16 @@ interface Props {
 
 const COLORS = ['#EF4444', '#3B82F6', '#22C55E', '#F59E0B', '#8B5CF6', '#000000'];
 
+// Resolve URL relativa (/uploads/...) para URL absoluta do backend
+const resolveUrl = (url: string) => {
+  if (!url) return url;
+  if (url.startsWith('http')) return url;
+  const base = (process.env.NEXT_PUBLIC_API_URL || '').replace('/api/v1', '');
+  return `${base}${url}`;
+};
+
 export default function PdfAnnotator({ pdfUrl, savedAnnotations, onSave, readOnly = false }: Props) {
+  const resolvedUrl = resolveUrl(pdfUrl);
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(1);
   const [scale, setScale] = useState(1.2);
@@ -393,7 +402,7 @@ export default function PdfAnnotator({ pdfUrl, savedAnnotations, onSave, readOnl
       <Box sx={{ position: 'relative', display: 'inline-block', mx: 'auto', boxShadow: 4, borderRadius: 1, overflow: 'hidden' }}>
         <div ref={pdfContainerRef}>
           <Document
-            file={pdfUrl}
+            file={resolvedUrl}
             onLoadSuccess={({ numPages }) => setNumPages(numPages)}
             onLoadError={(err) => console.error('[PdfAnnotator] load error:', err)}
             loading={<Box sx={{ p: 4, textAlign: 'center' }}><CircularProgress /></Box>}
@@ -402,7 +411,7 @@ export default function PdfAnnotator({ pdfUrl, savedAnnotations, onSave, readOnl
                 <Typography color="error" mb={1}>Erro ao carregar PDF</Typography>
                 <Typography variant="caption" color="text.secondary">Verifique o console para detalhes</Typography>
                 <Box mt={1}>
-                  <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ color: '#7B2FF7', fontSize: 13 }}>
+                  <a href={resolvedUrl} target="_blank" rel="noreferrer" style={{ color: '#7B2FF7', fontSize: 13 }}>
                     Abrir PDF diretamente ↗
                   </a>
                 </Box>

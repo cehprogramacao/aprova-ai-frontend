@@ -9,14 +9,15 @@ const nextConfig: NextConfig = {
   },
   // Proxy de API — evita CORS em dev
   async rewrites() {
+    const backendBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1').replace('/api/v1', '');
     return [
       {
         source: '/api/v1/:path*',
-        destination: 'http://localhost:3001/api/v1/:path*',
+        destination: `${backendBase}/api/v1/:path*`,
       },
       {
         source: '/uploads/:path*',
-        destination: 'http://localhost:3001/uploads/:path*',
+        destination: `${backendBase}/uploads/:path*`,
       },
     ];
   },
