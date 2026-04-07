@@ -7,10 +7,12 @@ import {
   DialogActions, List, ListItem, ListItemText, ListItemIcon,
   alpha, useTheme, CircularProgress, Tabs, Tab, Divider,
   Select, MenuItem, FormControl, InputLabel, LinearProgress, Tooltip,
+  Menu,
 } from '@mui/material';
 import {
   Add, CalendarMonth, AutoAwesome, CheckCircle,
   RadioButtonUnchecked, Timer, Delete, Edit, PlayArrow,
+  FileDownload, PictureAsPdf, Event,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { planApi, taskApi, subjectApi } from '@/lib/api';
@@ -35,6 +37,7 @@ export default function PlanoPage() {
   const [createPlanOpen, setCreatePlanOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [exportAnchor, setExportAnchor] = useState<null | HTMLElement>(null);
   const [planForm, setPlanForm] = useState({ name:'', startDate: dayjs().format('YYYY-MM-DD'), endDate: dayjs().add(3,'month').format('YYYY-MM-DD') });
   const [taskForm, setTaskForm] = useState({ title:'', scheduledDate: dayjs().format('YYYY-MM-DD'), estimatedMinutes:'60', type:'LEITURA', topicId:'' });
 
@@ -95,6 +98,139 @@ export default function PlanoPage() {
 
   const allTopics = subjects.flatMap((s: any) => s.modules?.flatMap((m: any) => m.topics?.map((t: any) => ({ ...t, subjectName: s.name })) || []) || []);
 
+  // ─── Export como PDF (jsPDF, client-side) ──────────────────────────────────
+  const exportPDF = async () => {
+    if (!activePlan) return;
+    setExportAnchor(null);
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 14;
+    let y = 20;
+
+    // Cabeçalho
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(123, 47, 247);
+    doc.text('Aprova.AI — Plano de Estudos', margin, y);
+    y += 8;
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text(activePlan.name, margin, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.setTextColor(120, 120, 120);
+    doc.text(
+      `${dayjs(activePlan.startDate).format('DD/MM/YYYY')} → ${dayjs(activePlan.endDate).format('DD/MM/YYYY')}`,
+      margin, y
+    );
+    y += 4;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, y, pageW - margin, y);
+    y += 6;
+
+    const sorted = Object.keys(tasksByDate).sort();
+    for (const date of sorted) {
+      const tasks = tasksByDate[date];
+
+      // Verifica se precisa de nova página
+      if (y > 265) { doc.addPage(); y = 20; }
+
+      // Data
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(50, 50, 50);
+      doc.text(dayjs(date).format('dddd, DD/MM/YYYY').toUpperCase(), margin, y);
+      y += 5;
+
+      for (const t of tasks) {
+        if (y > 270) { doc.addPage(); y = 20; }
+
+        const check = t.isCompleted ? '[x]' : '[ ]';
+        const label = TASK_LABEL[t.type] || t.type;
+        const line = `  ${check} ${t.title}  (${label} · ${t.estimatedMinutes}min)`;
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(t.isCompleted ? 150 : 40, t.isCompleted ? 150 : 40, t.isCompleted ? 150 : 40);
+        const lines = doc.splitTextToSize(line, pageW - margin * 2);
+        doc.text(lines, margin, y);
+        y += lines.length * 5;
+      }
+
+      y += 3;
+    }
+
+    // Rodapé
+    const totalTasks = activePlan.tasks?.length || 0;
+    const doneTasks = activePlan.tasks?.filter((t: any) => t.isCompleted).length || 0;
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text(
+      `Total: ${totalTasks} tarefas · ${doneTasks} concluídas · Gerado em ${dayjs().format('DD/MM/YYYY HH:mm')}`,
+      margin, doc.internal.pageSize.getHeight() - 8
+    );
+
+    doc.save(`plano-${activePlan.name.replace(/\s+/g, '-')}.pdf`);
+    toast.success('PDF exportado!');
+  };
+
+  // ─── Export como iCal (.ics) ───────────────────────────────────────────────
+  const exportIcal = () => {
+    if (!activePlan) return;
+    setExportAnchor(null);
+
+    const lines: string[] = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Aprova.AI//StudyPlan//PT',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      `X-WR-CALNAME:${activePlan.name}`,
+    ];
+
+    const fmt = (d: string) => d.replace(/[-:]/g, '').replace('T', 'T');
+    const stamp = dayjs().format('YYYYMMDDTHHmmss') + 'Z';
+
+    for (const date of Object.keys(tasksByDate).sort()) {
+      const tasks = tasksByDate[date];
+      let startHour = 8; // começa às 08:00
+
+      for (const t of tasks) {
+        const mins = t.estimatedMinutes || 60;
+        const dtStart = dayjs(date).hour(startHour).minute(0);
+        const dtEnd = dtStart.add(mins, 'minute');
+        startHour = dtEnd.hour() + (dtEnd.minute() > 0 ? 1 : 0);
+
+        const uid = `${t.id}@aprova-ai`;
+        lines.push('BEGIN:VEVENT');
+        lines.push(`UID:${uid}`);
+        lines.push(`DTSTAMP:${stamp}`);
+        lines.push(`DTSTART:${dtStart.format('YYYYMMDDTHHmmss')}`);
+        lines.push(`DTEND:${dtEnd.format('YYYYMMDDTHHmmss')}`);
+        lines.push(`SUMMARY:${t.title}`);
+        lines.push(`DESCRIPTION:${TASK_LABEL[t.type] || t.type} - ${mins} minutos estimados`);
+        lines.push(`CATEGORIES:ESTUDO`);
+        if (t.isCompleted) lines.push('STATUS:COMPLETED');
+        lines.push('END:VEVENT');
+      }
+    }
+
+    lines.push('END:VCALENDAR');
+
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `plano-${activePlan.name.replace(/\s+/g, '-')}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Calendário exportado! Abra o arquivo .ics para importar.');
+  };
+
   if (plansLoading) return <Box sx={{ display:'flex', justifyContent:'center', mt:8 }}><CircularProgress /></Box>;
 
   return (
@@ -113,6 +249,17 @@ export default function PlanoPage() {
               <Button variant="outlined" startIcon={<Add />} onClick={() => setCreateTaskOpen(true)}>
                 Tarefa
               </Button>
+              <Button variant="outlined" startIcon={<FileDownload />} onClick={e => setExportAnchor(e.currentTarget)}>
+                Exportar
+              </Button>
+              <Menu anchorEl={exportAnchor} open={Boolean(exportAnchor)} onClose={() => setExportAnchor(null)}>
+                <MenuItem onClick={exportPDF} sx={{ gap:1 }}>
+                  <PictureAsPdf fontSize="small" color="error" /> Exportar PDF
+                </MenuItem>
+                <MenuItem onClick={exportIcal} sx={{ gap:1 }}>
+                  <Event fontSize="small" color="primary" /> Exportar Calendário (.ics)
+                </MenuItem>
+              </Menu>
             </>
           )}
           <Button variant="contained" startIcon={<Add />} onClick={() => setCreatePlanOpen(true)}>
