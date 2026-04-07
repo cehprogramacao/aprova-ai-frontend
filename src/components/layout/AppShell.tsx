@@ -13,7 +13,7 @@ import {
   Analytics, Notifications, DarkMode, LightMode, Menu as MenuIcon,
   ChevronLeft, Bolt, Close, Person, GolfCourse, Quiz,
   Psychology, Article, SupervisorAccount, LocalFireDepartment,
-  FileUpload, PlayArrow,
+  FileUpload, PlayArrow, AutoStories, School as SchoolIcon,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -51,6 +51,10 @@ const navItems = [
   { label: 'Hábitos', icon: <FitnessCenter />, href: '/habitos' },
   { label: 'Analytics', icon: <Analytics />, href: '/analytics' },
   { label: 'Gamificação', icon: <EmojiEvents />, href: '/gamificacao' },
+  { divider: true, label: 'Redação' },
+  { label: 'Minhas Redações', icon: <AutoStories />, href: '/redacao' },
+  { label: 'Nova Redação', icon: <PlayArrow />, href: '/redacao/nova' },
+  { label: 'Painel Professor', icon: <SchoolIcon />, href: '/professor' },
   { divider: true, label: 'Conta' },
   { label: 'Meu Perfil', icon: <Person />, href: '/perfil' },
 ];

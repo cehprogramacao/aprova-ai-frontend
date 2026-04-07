@@ -361,6 +361,35 @@ export const questionExtractApi = {
   answer: (id: string, data: any) => api.post(`/question-extract/${id}/answer`, data),
 };
 
+export const essayApi = {
+  submit: (data: any) => api.post('/essays', data),
+  list: (params?: any) => api.get('/essays', { params }),
+  get: (id: string) => api.get(`/essays/${id}`),
+  generateInvite: () => api.post('/essays/invite'),
+  acceptInvite: (token: string) => api.post('/essays/accept-invite', { token }),
+  getInviteInfo: (token: string) => api.get(`/essays/invite/${token}`),
+  listMyTeachers: () => api.get('/essays/my-teachers'),
+  getEvolution: () => api.get('/essays/evolution'),
+};
+
+export const teacherApi = {
+  getDashboard: () => api.get('/teacher/dashboard'),
+  listEssays: (params?: any) => api.get('/teacher/essays', { params }),
+  listStudents: () => api.get('/teacher/students'),
+  getStudentStats: (studentId: string) => api.get(`/teacher/students/${studentId}/stats`),
+  getStudentInsights: (studentId: string) => api.get(`/teacher/students/${studentId}/insights`),
+  correctEssay: (id: string, data: any) => api.post(`/teacher/essays/${id}/correct`, data),
+  addComment: (essayId: string, data: any) => api.post(`/teacher/essays/${essayId}/comments`, data),
+  uploadAudio: (essayId: string, form: FormData) =>
+    api.post(`/teacher/essays/${essayId}/audio`, form, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  uploadCorrectedFile: (essayId: string, form: FormData) =>
+    api.post(`/teacher/essays/${essayId}/file`, form, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  listTemplates: () => api.get('/teacher/templates'),
+  createTemplate: (data: any) => api.post('/teacher/templates', data),
+  useTemplate: (id: string) => api.patch(`/teacher/templates/${id}/use`),
+  resolveComment: (id: string) => api.patch(`/teacher/comments/${id}/resolve`),
+};
+
 export const flashcardFolderApi = {
   getFolders: () => api.get('/flashcard-folders'),
   createFolder: (data: any) => api.post('/flashcard-folders', data),
