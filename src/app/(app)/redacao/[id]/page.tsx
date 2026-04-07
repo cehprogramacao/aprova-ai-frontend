@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 import {
   Box, Card, CardContent, Typography, Button, Chip, alpha, useTheme,
   Grid, LinearProgress, Avatar, Divider, CircularProgress, Paper,
@@ -71,7 +71,7 @@ export default function EssayDetailPage() {
 
     // Constrói segmentos de texto com highlights
     const sorted = [...inlineComments].sort((a: any, b: any) => a.startOffset - b.startOffset);
-    const segments: JSX.Element[] = [];
+    const segments: ReactElement[] = [];
     let lastIdx = 0;
 
     sorted.forEach((c: any, i: number) => {

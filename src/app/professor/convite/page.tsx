@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import {
-  Box, Card, CardContent, Typography, Button, TextField, CircularProgress,
+  Box, Card, CardContent, Typography, Button, CircularProgress,
   Avatar, Paper, alpha,
 } from '@mui/material';
 import { School, CheckCircle, Error } from '@mui/icons-material';
@@ -10,7 +10,7 @@ import { essayApi } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 
-export default function ConvitePage() {
+function ConviteContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const router = useRouter();
@@ -104,5 +104,17 @@ export default function ConvitePage() {
         </CardContent>
       </Card>
     </Box>
+  );
+}
+
+export default function ConvitePage() {
+  return (
+    <Suspense fallback={
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    }>
+      <ConviteContent />
+    </Suspense>
   );
 }
