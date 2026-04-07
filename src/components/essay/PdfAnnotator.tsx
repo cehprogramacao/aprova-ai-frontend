@@ -15,7 +15,15 @@ import {
 } from '@mui/icons-material';
 import toast from 'react-hot-toast';
 
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+// pdfjs-dist v5 usa ES modules — precisa de worker com { type: 'module' }
+if (typeof window !== 'undefined') {
+  try {
+    const worker = new Worker('/pdf.worker.min.mjs', { type: 'module' });
+    (pdfjs.GlobalWorkerOptions as any).workerPort = worker;
+  } catch {
+    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+  }
+}
 
 interface Stroke {
   points: { x: number; y: number }[];
@@ -387,8 +395,19 @@ export default function PdfAnnotator({ pdfUrl, savedAnnotations, onSave, readOnl
           <Document
             file={pdfUrl}
             onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+            onLoadError={(err) => console.error('[PdfAnnotator] load error:', err)}
             loading={<Box sx={{ p: 4, textAlign: 'center' }}><CircularProgress /></Box>}
-            error={<Box sx={{ p: 4, textAlign: 'center' }}><Typography color="error">Erro ao carregar PDF</Typography></Box>}
+            error={
+              <Box sx={{ p: 4, textAlign: 'center' }}>
+                <Typography color="error" mb={1}>Erro ao carregar PDF</Typography>
+                <Typography variant="caption" color="text.secondary">Verifique o console para detalhes</Typography>
+                <Box mt={1}>
+                  <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ color: '#7B2FF7', fontSize: 13 }}>
+                    Abrir PDF diretamente ↗
+                  </a>
+                </Box>
+              </Box>
+            }
           >
             <Page
               pageNumber={page}
