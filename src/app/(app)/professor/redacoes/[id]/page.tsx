@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Box, Card, CardContent, Typography, Button, TextField, Chip, alpha,
   useTheme, CircularProgress, Grid, Slider, Paper, Divider, IconButton,
@@ -65,24 +65,25 @@ export default function CorrigirRedacaoPage() {
   const totalScore = form.scoreC1 + form.scoreC2 + form.scoreC3 + form.scoreC4 + form.scoreC5;
   const scoreColor = totalScore >= 700 ? '#22C55E' : totalScore >= 500 ? '#F59E0B' : '#EF4444';
 
-  const { data: essay, isLoading } = useQuery({
+  const { data: essay, isLoading } = useQuery<any>({
     queryKey: ['essay', essayId],
     queryFn: () => essayApi.get(essayId).then(r => r.data.data),
-    onSuccess: (data: any) => {
-      const c = data?.corrections?.[0];
-      if (c) {
-        setForm({
-          generalFeedback: c.generalFeedback || '',
-          strengthPoints: c.strengthPoints || '',
-          improvementPoints: c.improvementPoints || '',
-          scoreC1: c.scoreC1 ?? 120, scoreC2: c.scoreC2 ?? 120,
-          scoreC3: c.scoreC3 ?? 120, scoreC4: c.scoreC4 ?? 120, scoreC5: c.scoreC5 ?? 120,
-          requestRewrite: c.requestRewrite || false,
-          rewriteDeadline: c.rewriteDeadline ? dayjs(c.rewriteDeadline).format('YYYY-MM-DD') : '',
-        });
-      }
-    },
-  } as any);
+  });
+
+  useEffect(() => {
+    const c = essay?.corrections?.[0];
+    if (c) {
+      setForm({
+        generalFeedback: c.generalFeedback || '',
+        strengthPoints: c.strengthPoints || '',
+        improvementPoints: c.improvementPoints || '',
+        scoreC1: c.scoreC1 ?? 120, scoreC2: c.scoreC2 ?? 120,
+        scoreC3: c.scoreC3 ?? 120, scoreC4: c.scoreC4 ?? 120, scoreC5: c.scoreC5 ?? 120,
+        requestRewrite: c.requestRewrite || false,
+        rewriteDeadline: c.rewriteDeadline ? dayjs(c.rewriteDeadline).format('YYYY-MM-DD') : '',
+      });
+    }
+  }, [essay]);
 
   const { data: templates = [] } = useQuery({
     queryKey: ['feedback-templates'],
