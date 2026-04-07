@@ -159,7 +159,7 @@ export default function EssayDetailPage() {
                     PDF enviado
                   </Typography>
                   <PdfAnnotator
-                    pdfUrl={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${essay.pdfUrl}`}
+                    pdfUrl={essay.pdfUrl}
                     savedAnnotations={correction?.pdfAnnotations}
                     readOnly
                   />

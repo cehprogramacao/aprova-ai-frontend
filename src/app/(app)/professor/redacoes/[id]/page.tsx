@@ -276,7 +276,7 @@ export default function CorrigirRedacaoPage() {
               {leftTab === 1 && essay.pdfUrl && (
                 <Box sx={{ overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
                   <PdfAnnotator
-                    pdfUrl={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${essay.pdfUrl}`}
+                    pdfUrl={essay.pdfUrl}
                     savedAnnotations={essay.corrections?.[0]?.pdfAnnotations}
                     onSave={async (annotations) => {
                       await teacherApi.saveAnnotations(essayId, annotations);
