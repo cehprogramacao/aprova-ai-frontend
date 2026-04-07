@@ -6,11 +6,12 @@ import {
   useTheme, CircularProgress, Grid, Slider, Paper, Divider, IconButton,
   Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle,
   DialogContent, DialogActions, Tooltip, Accordion, AccordionSummary,
-  AccordionDetails, FormControlLabel, Checkbox,
+  AccordionDetails, FormControlLabel, Checkbox, Tab, Tabs,
 } from '@mui/material';
 import {
   ArrowBack, Send, Mic, Upload, Add, ExpandMore, Delete,
-  CheckCircle, Lightbulb, Save, Schedule, Psychology,
+  CheckCircle, Lightbulb, Save, Schedule, Psychology, PictureAsPdf,
+  Draw,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { teacherApi, essayApi } from '@/lib/api';
@@ -18,6 +19,9 @@ import toast from 'react-hot-toast';
 import { useRouter, useParams } from 'next/navigation';
 import { BRAND_GRADIENT } from '@/theme';
 import dayjs from 'dayjs';
+import dynamic from 'next/dynamic';
+
+const PdfAnnotator = dynamic(() => import('@/components/essay/PdfAnnotator'), { ssr: false });
 
 const COMMENT_TYPES = [
   { value: 'GRAMMAR',    label: 'Gramática',   color: '#EF4444' },
@@ -42,6 +46,9 @@ export default function CorrigirRedacaoPage() {
   const { id: essayId } = useParams<{ id: string }>();
   const audioRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Tab esquerda: texto ou PDF
+  const [leftTab, setLeftTab] = useState(0);
 
   // Seleção de texto inline
   const [selection, setSelection] = useState<{ text: string; start: number; end: number } | null>(null);
@@ -202,51 +209,80 @@ export default function CorrigirRedacaoPage() {
         onChange={e => { if (e.target.files?.[0]) uploadFileMutation.mutate(e.target.files[0]); }} />
 
       <Grid container spacing={2}>
-        {/* Texto + anotações */}
+        {/* Texto / PDF + anotações */}
         <Grid size={{ xs: 12, lg: 6 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                <Typography variant="subtitle2" fontWeight={700}>Texto da redação</Typography>
-                <Tooltip title="Selecione um trecho e clique para comentar">
-                  <Chip label="Selecione para comentar" size="small" icon={<Add />}
-                    sx={{ bgcolor: alpha('#7B2FF7', 0.1), color: '#7B2FF7', cursor: 'help' }} />
-                </Tooltip>
-              </Box>
-              <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                {essay.wordCount} palavras · {essay.charCount} caracteres
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <Box id="essay-content" onMouseUp={handleTextSelection}
-                sx={{ userSelect: 'text', lineHeight: 1.9, fontFamily: 'Georgia, serif', fontSize: 15,
-                  whiteSpace: 'pre-wrap', cursor: 'text', minHeight: 300 }}>
-                {essay.content}
-              </Box>
-
-              {/* Comentários existentes */}
-              {comments.length > 0 && (
-                <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
-                  <Typography variant="caption" fontWeight={700} color="text.secondary" display="block" mb={1}>
-                    ANOTAÇÕES ({comments.length})
-                  </Typography>
-                  {comments.map((c: any) => (
-                    <Box key={c.id} sx={{ mb: 1, p: 1, borderRadius: 1.5,
-                      border: `1px solid ${alpha(COMMENT_COLORS[c.type] || '#9CA3AF', 0.3)}`,
-                      bgcolor: alpha(COMMENT_COLORS[c.type] || '#9CA3AF', 0.04) }}>
-                      <Box sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
-                        <Chip label={COMMENT_TYPES.find(t => t.value === c.type)?.label || c.type}
-                          size="small" sx={{ bgcolor: alpha(COMMENT_COLORS[c.type] || '#9CA3AF', 0.15),
-                            color: COMMENT_COLORS[c.type] || '#9CA3AF', fontWeight: 700, fontSize: 9 }} />
-                      </Box>
-                      {c.selectedText && (
-                        <Typography variant="caption" sx={{ fontStyle: 'italic', color: 'text.secondary',
-                          display: 'block', mb: 0.5, pl: 1, borderLeft: `2px solid ${COMMENT_COLORS[c.type]}` }}>
-                          "{c.selectedText}"
-                        </Typography>
-                      )}
-                      <Typography variant="body2">{c.text}</Typography>
+              {/* Tabs: texto | PDF rabiscável */}
+              <Tabs value={leftTab} onChange={(_, v) => setLeftTab(v)} sx={{ mb: 1.5, minHeight: 36 }}
+                TabIndicatorProps={{ style: { height: 2 } }}>
+                <Tab label="Texto" sx={{ minHeight: 36, py: 0, fontSize: 13 }} />
+                {essay.pdfUrl && (
+                  <Tab label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Draw sx={{ fontSize: 14 }} /> PDF + Rabiscos
                     </Box>
-                  ))}
+                  } sx={{ minHeight: 36, py: 0, fontSize: 13 }} />
+                )}
+              </Tabs>
+
+              {leftTab === 0 && (
+                <>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      {essay.wordCount} palavras · {essay.charCount} caracteres
+                    </Typography>
+                    <Tooltip title="Selecione um trecho e clique para comentar">
+                      <Chip label="Selecione para comentar" size="small" icon={<Add />}
+                        sx={{ bgcolor: alpha('#7B2FF7', 0.1), color: '#7B2FF7', cursor: 'help' }} />
+                    </Tooltip>
+                  </Box>
+                  <Divider sx={{ mb: 2 }} />
+                  <Box id="essay-content" onMouseUp={handleTextSelection}
+                    sx={{ userSelect: 'text', lineHeight: 1.9, fontFamily: 'Georgia, serif', fontSize: 15,
+                      whiteSpace: 'pre-wrap', cursor: 'text', minHeight: 300 }}>
+                    {essay.content}
+                  </Box>
+
+                  {/* Comentários existentes */}
+                  {comments.length > 0 && (
+                    <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
+                      <Typography variant="caption" fontWeight={700} color="text.secondary" display="block" mb={1}>
+                        ANOTAÇÕES ({comments.length})
+                      </Typography>
+                      {comments.map((c: any) => (
+                        <Box key={c.id} sx={{ mb: 1, p: 1, borderRadius: 1.5,
+                          border: `1px solid ${alpha(COMMENT_COLORS[c.type] || '#9CA3AF', 0.3)}`,
+                          bgcolor: alpha(COMMENT_COLORS[c.type] || '#9CA3AF', 0.04) }}>
+                          <Box sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
+                            <Chip label={COMMENT_TYPES.find(t => t.value === c.type)?.label || c.type}
+                              size="small" sx={{ bgcolor: alpha(COMMENT_COLORS[c.type] || '#9CA3AF', 0.15),
+                                color: COMMENT_COLORS[c.type] || '#9CA3AF', fontWeight: 700, fontSize: 9 }} />
+                          </Box>
+                          {c.selectedText && (
+                            <Typography variant="caption" sx={{ fontStyle: 'italic', color: 'text.secondary',
+                              display: 'block', mb: 0.5, pl: 1, borderLeft: `2px solid ${COMMENT_COLORS[c.type]}` }}>
+                              "{c.selectedText}"
+                            </Typography>
+                          )}
+                          <Typography variant="body2">{c.text}</Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </>
+              )}
+
+              {leftTab === 1 && essay.pdfUrl && (
+                <Box sx={{ overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
+                  <PdfAnnotator
+                    pdfUrl={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${essay.pdfUrl}`}
+                    savedAnnotations={essay.corrections?.[0]?.pdfAnnotations}
+                    onSave={async (annotations) => {
+                      await teacherApi.saveAnnotations(essayId, annotations);
+                      qc.invalidateQueries({ queryKey: ['essay', essayId] });
+                    }}
+                  />
                 </Box>
               )}
             </CardContent>

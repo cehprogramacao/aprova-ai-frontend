@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, type ReactElement } from 'react';
+import dynamic from 'next/dynamic';
+
+const PdfAnnotator = dynamic(() => import('@/components/essay/PdfAnnotator'), { ssr: false });
 import {
   Box, Card, CardContent, Typography, Button, Chip, alpha, useTheme,
   Grid, LinearProgress, Avatar, Divider, CircularProgress, Paper,
@@ -148,6 +151,20 @@ export default function EssayDetailPage() {
               </Box>
               <Divider sx={{ mb: 2 }} />
               {renderContent()}
+
+              {/* PDF do aluno (somente leitura) */}
+              {essay.pdfUrl && (
+                <Box sx={{ mt: 3, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
+                  <Typography variant="subtitle2" fontWeight={700} mb={1.5}>
+                    PDF enviado
+                  </Typography>
+                  <PdfAnnotator
+                    pdfUrl={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${essay.pdfUrl}`}
+                    savedAnnotations={correction?.pdfAnnotations}
+                    readOnly
+                  />
+                </Box>
+              )}
             </CardContent>
           </Card>
 

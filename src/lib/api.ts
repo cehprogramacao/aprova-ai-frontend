@@ -63,7 +63,7 @@ export const authApi = {
   login: (data: { email: string; password: string }) =>
     api.post('/auth/login', data),
 
-  register: (data: { name: string; email: string; password: string }) =>
+  register: (data: { name: string; email: string; password: string; role?: string }) =>
     api.post('/auth/register', data),
 
   me: () => api.get('/auth/me'),
@@ -390,6 +390,8 @@ export const teacherApi = {
   createTemplate: (data: any) => api.post('/teacher/templates', data),
   useTemplate: (id: string) => api.patch(`/teacher/templates/${id}/use`),
   resolveComment: (id: string) => api.patch(`/teacher/comments/${id}/resolve`),
+  saveAnnotations: (essayId: string, annotations: any[]) =>
+    api.patch(`/teacher/essays/${essayId}/annotations`, { annotations }),
 };
 
 export const flashcardFolderApi = {
