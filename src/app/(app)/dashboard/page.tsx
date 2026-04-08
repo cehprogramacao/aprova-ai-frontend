@@ -97,13 +97,16 @@ export default function DashboardPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['today-tasks'] });
       qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: ['gamification'] });
       toast.success('Tarefa concluída! +10 XP 🎉');
     },
+    onError: (err: any) => toast.error(err?.response?.data?.error || 'Erro ao concluir tarefa'),
   });
 
   const uncompleteMutation = useMutation({
     mutationFn: (id: string) => taskApi.uncomplete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['today-tasks'] }),
+    onError: (err: any) => toast.error(err?.response?.data?.error || 'Erro ao desfazer'),
   });
 
   const emotionMutation = useMutation({

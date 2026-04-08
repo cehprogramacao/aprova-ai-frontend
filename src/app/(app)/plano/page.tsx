@@ -80,7 +80,14 @@ export default function PlanoPage() {
 
   const completeMutation = useMutation({
     mutationFn: (id: string) => taskApi.complete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['study-plans'] }); qc.invalidateQueries({ queryKey: ['today-tasks'] }); toast.success('Concluída! +10 XP 🎉'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['study-plans'] });
+      qc.invalidateQueries({ queryKey: ['today-tasks'] });
+      qc.invalidateQueries({ queryKey: ['intel-plan-today'] });
+      qc.invalidateQueries({ queryKey: ['gamification'] });
+      toast.success('Concluída! +10 XP 🎉');
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.error || 'Erro ao concluir tarefa'),
   });
 
   const deleteTaskMutation = useMutation({
@@ -113,7 +120,7 @@ export default function PlanoPage() {
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(123, 47, 247);
-    doc.text('Aprova.AI — Plano de Estudos', margin, y);
+    doc.text('rottaConcursos — Plano de Estudos', margin, y);
     y += 8;
 
     doc.setFontSize(12);
@@ -186,7 +193,7 @@ export default function PlanoPage() {
     const lines: string[] = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Aprova.AI//StudyPlan//PT',
+      'PRODID:-//rottaConcursos//StudyPlan//PT',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
       `X-WR-CALNAME:${activePlan.name}`,

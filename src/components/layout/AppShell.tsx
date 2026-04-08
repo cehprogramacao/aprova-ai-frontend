@@ -219,19 +219,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Box
             sx={{
               width: 36, height: 36, borderRadius: 2,
-              bgcolor: 'primary.main',
+              background: 'linear-gradient(135deg, #7B2FF7, #00C2FF)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
-            <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: 16 }}>A</Typography>
+            <Typography sx={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: -0.5 }}>R</Typography>
           </Box>
-          <Typography variant="h6" fontWeight={800} sx={{ letterSpacing: -0.5 }}>
-            Aprova<span style={{ color: theme.palette.primary.main }}>.AI</span>
+          <Typography variant="h6" fontWeight={800} sx={{ letterSpacing: -0.5, lineHeight: 1 }}>
+            rotta<span style={{ color: theme.palette.primary.main }}>Concursos</span>
           </Typography>
         </Toolbar>
         <Divider sx={{ opacity: 0.3 }} />
 
-        <List sx={{ px: 1, py: 1, flexGrow: 1, overflowY: 'auto' }}>
+        <List sx={{ px: 1, py: 1, flexGrow: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           {navItems.map((item, idx) => {
             if ('divider' in item && item.divider) {
               return (
@@ -286,6 +287,26 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </List>
+
+        {/* Footer do Drawer */}
+        <Box
+          sx={{
+            px: 2, py: 1.5,
+            borderTop: `1px solid ${alpha(theme.palette.divider, 0.4)}`,
+            textAlign: 'center',
+          }}
+        >
+          <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', fontSize: 10, lineHeight: 1.6 }}>
+            © {new Date().getFullYear()} rottaConcursos
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', fontSize: 10 }}>
+            Desenvolvido por{' '}
+            <Box component="a" href="https://www.instagram.com/kauan.cleuton" target="_blank" rel="noopener noreferrer"
+              sx={{ color: 'text.disabled', textDecoration: 'underline', '&:hover': { color: 'primary.main' } }}>
+              Kauan Cleuton
+            </Box>
+          </Typography>
+        </Box>
       </Drawer>
 
       {/* Main content */}
@@ -296,11 +317,66 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           bgcolor: 'background.default',
           minHeight: '100vh',
           overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <Toolbar />
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: 3, flexGrow: 1 }}>
           {children}
+        </Box>
+
+        {/* Footer principal */}
+        <Box
+          component="footer"
+          sx={{
+            borderTop: `1px solid ${alpha(theme.palette.divider, 0.4)}`,
+            py: 2,
+            px: 3,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 1,
+          }}
+        >
+          {/* Logo + nome */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box
+              sx={{
+                width: 24, height: 24, borderRadius: 1,
+                background: 'linear-gradient(135deg, #7B2FF7, #00C2FF)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <Typography sx={{ color: '#fff', fontWeight: 900, fontSize: 11 }}>R</Typography>
+            </Box>
+            <Typography variant="caption" fontWeight={700} sx={{ letterSpacing: -0.3 }}>
+              rotta<span style={{ color: theme.palette.primary.main }}>Concursos</span>
+            </Typography>
+          </Box>
+
+          {/* Copyright central */}
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="caption" color="text.disabled" display="block">
+              © {new Date().getFullYear()} rottaConcursos. Todos os direitos reservados.
+            </Typography>
+            <Typography variant="caption" color="text.disabled" display="block" sx={{ fontSize: 10 }}>
+              É proibida a reprodução, cópia, distribuição ou uso comercial sem autorização expressa do titular.
+            </Typography>
+            <Typography variant="caption" color="text.disabled" display="block" sx={{ fontSize: 10 }}>
+              Direitos econômicos e patrimoniais pertencentes a Kauan Cleuton — Lei 9.610/98 (Lei de Direitos Autorais).
+            </Typography>
+          </Box>
+
+          {/* Desenvolvido por */}
+          <Typography variant="caption" color="text.disabled">
+            Desenvolvido por{' '}
+            <Box component="a" href="https://www.instagram.com/kauan.cleuton" target="_blank" rel="noopener noreferrer"
+              sx={{ color: 'text.disabled', fontWeight: 700, textDecoration: 'underline', '&:hover': { color: 'primary.main' } }}>
+              Kauan Cleuton
+            </Box>
+          </Typography>
         </Box>
       </Box>
     </Box>

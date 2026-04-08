@@ -10,12 +10,17 @@ import {
 import {
   PlayArrow, Pause, Stop, SkipNext, Settings,
   SelfImprovement, Timer, MusicNote, Coffee,
-  Visibility, ArrowForward, MenuBook,
+  Visibility, ArrowForward, MenuBook, CheckCircle,
+  RadioButtonUnchecked, CalendarMonth,
 } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { focusApi, errorNotebookApi } from '@/lib/api';
+import { focusApi, errorNotebookApi, planApi, taskApi } from '@/lib/api';
 import toast from 'react-hot-toast';
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
 import { BRAND_GRADIENT } from '@/theme';
+
+dayjs.locale('pt-br');
 
 type Phase = 'WORK' | 'BREAK' | 'LONG_BREAK';
 type Status = 'idle' | 'running' | 'paused';
@@ -54,6 +59,32 @@ export default function FocoPage() {
   const [flashReviewOpen, setFlashReviewOpen] = useState(false);
   const [flashIndex, setFlashIndex] = useState(0);
   const [flashFlipped, setFlashFlipped] = useState(false);
+  const [focusedTaskId, setFocusedTaskId] = useState<string | null>(null);
+
+  // Tarefas de hoje
+  const { data: todayData } = useQuery({
+    queryKey: ['today-tasks'],
+    queryFn: () => planApi.getToday().then(r => r.data.data),
+    refetchInterval: 30000,
+  });
+
+  // Próximas tarefas (plano ativo)
+  const { data: plans = [] } = useQuery({
+    queryKey: ['study-plans'],
+    queryFn: () => planApi.getAll().then(r => r.data.data),
+  });
+
+  const completeFocusTask = useMutation({
+    mutationFn: (id: string) => taskApi.complete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['today-tasks'] });
+      qc.invalidateQueries({ queryKey: ['study-plans'] });
+      qc.invalidateQueries({ queryKey: ['gamification'] });
+      toast.success('+10 XP 🎉');
+      if (focusedTaskId) setFocusedTaskId(null);
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.error || 'Erro ao concluir'),
+  });
 
   // Revisão Relâmpago — busca erros recentes
   const { data: recentErrors = [] } = useQuery({
@@ -310,8 +341,126 @@ export default function FocoPage() {
           </Card>
         </Grid>
 
-        {/* Configurações */}
+        {/* Coluna direita */}
         <Grid size={{ xs: 12, md: 5 }}>
+
+          {/* ── Tarefas de Hoje ── */}
+          {(() => {
+            const todayTasks: any[] = todayData?.tasks || [];
+            const pending = todayTasks.filter((t: any) => !t.isCompleted);
+            const done = todayTasks.filter((t: any) => t.isCompleted);
+            return (
+              <Card sx={{ mb: 2 }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+                    <Typography variant="subtitle1" fontWeight={700}>Tarefas de Hoje</Typography>
+                    {todayTasks.length > 0 && (
+                      <Chip
+                        label={`${done.length}/${todayTasks.length}`}
+                        size="small"
+                        color={done.length === todayTasks.length ? 'success' : 'default'}
+                      />
+                    )}
+                  </Box>
+
+                  {todayTasks.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                      Nenhuma tarefa para hoje. Crie um plano de estudos em{' '}
+                      <Box component="span" sx={{ color: 'primary.main', cursor: 'pointer' }}
+                        onClick={() => window.location.href = '/plano'}>
+                        /plano
+                      </Box>.
+                    </Typography>
+                  ) : (
+                    <>
+                      {todayTasks.length > 0 && (
+                        <LinearProgress
+                          variant="determinate"
+                          value={todayTasks.length > 0 ? (done.length / todayTasks.length) * 100 : 0}
+                          sx={{ mb: 1.5, height: 5, borderRadius: 3 }}
+                        />
+                      )}
+                      {[...pending, ...done].map((t: any) => (
+                        <Box key={t.id} sx={{
+                          display: 'flex', alignItems: 'center', gap: 1, py: 0.75,
+                          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.4)}`,
+                          opacity: t.isCompleted ? 0.6 : 1,
+                          bgcolor: focusedTaskId === t.id ? alpha(theme.palette.primary.main, 0.06) : 'transparent',
+                          borderRadius: 1, px: 0.5,
+                        }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => !t.isCompleted && completeFocusTask.mutate(t.id)}
+                            sx={{ color: t.isCompleted ? 'success.main' : 'text.disabled', p: 0.5 }}
+                          >
+                            {t.isCompleted ? <CheckCircle fontSize="small" /> : <RadioButtonUnchecked fontSize="small" />}
+                          </IconButton>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="caption" fontWeight={500}
+                              sx={{ textDecoration: t.isCompleted ? 'line-through' : 'none', display: 'block' }}
+                              noWrap>
+                              {t.title}
+                            </Typography>
+                            <Typography variant="caption" color="text.disabled">{t.estimatedMinutes}min</Typography>
+                          </Box>
+                          {!t.isCompleted && (
+                            <Tooltip title="Focar nessa tarefa">
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  setFocusedTaskId(t.id);
+                                  if (status === 'idle') start();
+                                  toast(`Focando em: ${t.title}`, { icon: '🎯' });
+                                }}
+                                sx={{ p: 0.5, color: focusedTaskId === t.id ? 'primary.main' : 'text.disabled' }}
+                              >
+                                <PlayArrow fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </Box>
+                      ))}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })()}
+
+          {/* ── Próximas Tarefas ── */}
+          {(() => {
+            const activePlan = (plans as any[]).find((p: any) => p.isActive);
+            const today = dayjs().format('YYYY-MM-DD');
+            const upcoming = (activePlan?.tasks || [])
+              .filter((t: any) => !t.isCompleted && dayjs(t.scheduledDate).format('YYYY-MM-DD') > today)
+              .slice(0, 5);
+            if (!upcoming.length) return null;
+            return (
+              <Card sx={{ mb: 2 }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                    <CalendarMonth fontSize="small" color="action" />
+                    <Typography variant="subtitle1" fontWeight={700}>Próximas Tarefas</Typography>
+                  </Box>
+                  {upcoming.map((t: any) => (
+                    <Box key={t.id} sx={{
+                      display: 'flex', alignItems: 'center', gap: 1, py: 0.75,
+                      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+                    }}>
+                      <Box sx={{ width: 4, height: 32, borderRadius: 2, bgcolor: 'primary.main', flexShrink: 0 }} />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="caption" fontWeight={500} noWrap display="block">{t.title}</Typography>
+                        <Typography variant="caption" color="text.disabled">
+                          {dayjs(t.scheduledDate).format('ddd DD/MM')} · {t.estimatedMinutes}min
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </CardContent>
+              </Card>
+            );
+          })()}
+
           <Card sx={{ mb: 2 }}>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
