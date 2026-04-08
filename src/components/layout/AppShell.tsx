@@ -227,7 +227,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Typography sx={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: -0.5 }}>R</Typography>
           </Box>
           <Typography variant="h6" fontWeight={800} sx={{ letterSpacing: -0.5, lineHeight: 1 }}>
-            rotta<span style={{ color: theme.palette.primary.main }}>Concursos</span>
+            Rotta<span style={{ color: theme.palette.primary.main }}>Concursos</span>
           </Typography>
         </Toolbar>
         <Divider sx={{ opacity: 0.3 }} />
@@ -297,7 +297,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           }}
         >
           <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', fontSize: 10, lineHeight: 1.6 }}>
-            © {new Date().getFullYear()} rottaConcursos
+            © {new Date().getFullYear()} RottaConcursos
           </Typography>
           <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', fontSize: 10 }}>
             Desenvolvido por{' '}
@@ -352,14 +352,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <Typography sx={{ color: '#fff', fontWeight: 900, fontSize: 11 }}>R</Typography>
             </Box>
             <Typography variant="caption" fontWeight={700} sx={{ letterSpacing: -0.3 }}>
-              rotta<span style={{ color: theme.palette.primary.main }}>Concursos</span>
+              Rotta<span style={{ color: theme.palette.primary.main }}>Concursos</span>
             </Typography>
           </Box>
 
           {/* Copyright central */}
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="caption" color="text.disabled" display="block">
-              © {new Date().getFullYear()} rottaConcursos. Todos os direitos reservados.
+              © {new Date().getFullYear()} RottaConcursos. Todos os direitos reservados.
             </Typography>
             <Typography variant="caption" color="text.disabled" display="block" sx={{ fontSize: 10 }}>
               É proibida a reprodução, cópia, distribuição ou uso comercial sem autorização expressa do titular.

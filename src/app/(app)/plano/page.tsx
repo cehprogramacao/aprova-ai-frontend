@@ -120,7 +120,7 @@ export default function PlanoPage() {
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(123, 47, 247);
-    doc.text('rottaConcursos — Plano de Estudos', margin, y);
+    doc.text('RottaConcursos — Plano de Estudos', margin, y);
     y += 8;
 
     doc.setFontSize(12);
@@ -193,7 +193,7 @@ export default function PlanoPage() {
     const lines: string[] = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//rottaConcursos//StudyPlan//PT',
+      'PRODID:-//RottaConcursos//StudyPlan//PT',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
       `X-WR-CALNAME:${activePlan.name}`,

@@ -5,8 +5,8 @@ import Providers from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "rottaConcursos - Plataforma Inteligente de Estudos",
-  description: "Estude de forma inteligente e passe no seu concurso com a rottaConcursos",
+  title: "RottaConcursos - Plataforma Inteligente de Estudos",
+  description: "Estude de forma inteligente e passe no seu concurso com a RottaConcursos",
 };
 
 export default function RootLayout({
